@@ -8,13 +8,19 @@
 </node>
 
 <!--Run the node that plots stuff on rviz-->
-<node pkg = "espeleo_planning" name = "config" type = "config_rviz_cylinder.py" args="" output="screen">
+<node pkg = "espeleo_planning" name = "config" type = "config_rviz_basic.py" args="" output="screen">
 </node>
 
 
 <!--Run the controller node -->
 <node pkg = "espeleo_planning" name = "controller" type = "control_motors.py" args="" output="screen">
 </node>
+
+
+<!--Run the imu node -->
+<node pkg = "espeleo_planning" name = "imu_node" type = "imu_node.py" args="" output="screen">
+</node>
+
 
 <!--Run the teleop key of the turtlesim package-->
 <node pkg = "turtlesim" name = "keyboard" type = "turtle_teleop_key" args="" output="screen">

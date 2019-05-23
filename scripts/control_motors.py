@@ -12,7 +12,6 @@ from ros_eposmcd_msgs.msg import Movement, MovementArray, EspeleoJoints
 
 
 from tf2_msgs.msg import TFMessage
-# from scipy.spatial.transform import Rotation
 import numpy as np
 
 
@@ -23,47 +22,24 @@ import numpy as np
 def callback_pose(data):
     global x_n, y_n, theta_n
 
+    # For every transform in the message
+    for T in data.transforms:
 
-    #print data
+        # Check if the transform refers to the EspeleoRobo
+        if (T.child_frame_id == "EspeleoRobo"):
 
-    if (data.transforms[0].child_frame_id == "EspeleoRobo"):
+            x_n = T.transform.translation.x # x position
+            y_n = T.transform.translation.y # y position
+            z_n = T.transform.translation.z # z position
+            x_q = T.transform.rotation.x # quaternion
+            y_q = T.transform.rotation.y # quaternion
+            z_q = T.transform.rotation.z # quaternion
+            w_q = T.transform.rotation.w # quaternion
 
-        x_n = data.transforms[0].transform.translation.x  # posicao 'x' do robo no mundo
-        y_n = data.transforms[0].transform.translation.y  # posicao 'y' do robo no mundo
-        z_n = data.transforms[0].transform.translation.z  # posicao 'z' do robo no mundo
-        x_q = data.transforms[0].transform.rotation.x
-        y_q = data.transforms[0].transform.rotation.y
-        z_q = data.transforms[0].transform.rotation.z
-        w_q = data.transforms[0].transform.rotation.w
-        #euler = euler_from_quaternion([x_q, y_q, z_q, w_q])
-
-
-        R_vrep = Rotation.from_quat(np.array([x_q, y_q, z_q, w_q]))
-        R_corr = Rotation.from_quat(np.array([0.0, 0.7071, 0.0, 0.7071]))
-        #R_corr = Rotation.from_quat(np.array([-0.5000, 0.5000, -0.5000, 0.5000]))
-
-        #R = R_vrep*R_corr
-
-        #q = R.as_quat()
-        #aaa = euler_from_quaternion(q)
-        #print "[aaa] = [",aaa[0]*180/pi,", ",aaa[1]*180/pi,", ",aaa[2]*180/pi,"]"
-
-        #print "R = \n", R.as_dcm()
-
-        #theta_n = euler[2]  # orientaco 'theta' do robo no mundo ???????????????????????????
-
-
-        br1 = tf.TransformBroadcaster()
-        #     0.5000, 0.5000, -0.5000, 0.5000
-        phi = 0
-        #br1.sendTransform((3*0, 0, 0), (sin(phi/2), sin(phi/2), sin(phi/2), cos(phi/2)), rospy.Time.now(), "/EspeleoRobo_2", "EspeleoRobo")
-        br1.sendTransform((3*0, 0, 0), (0.0, 0.7071, 0.0, 0.7071), rospy.Time.now(), "/EspeleoRobo_2", "EspeleoRobo")
-        br2 = tf.TransformBroadcaster()
-        br2.sendTransform((x_n, y_n, z_n), (x_q, y_q, z_q, w_q), rospy.Time.now(), "/EspeleoRobo", "world")
+            br = tf.TransformBroadcaster()
+            br.sendTransform((x_n, y_n, z_n), (x_q, y_q, z_q, w_q), rospy.Time.now(), "/EspeleoRobo", "world")
 
     return
-
-
 # ----------  ----------  ----------  ----------  ----------
 
 
@@ -76,11 +52,13 @@ def callback_cmd_vel(data):
     global v, omega
     global last_cmd_vel_msg
 
-    v = data.linear.x/1.0
-    omega = data.angular.z/1.0
+    # Get the command velocities
+    v = data.linear.x
+    omega = data.angular.z
 
     print "[v, omega] = [", v,", ",omega,"]"
 
+    # Update the "last command received" variable
     last_cmd_vel_msg = rospy.get_rostime().to_sec()
 
     return
@@ -94,6 +72,7 @@ def callback_joints(data):
 
     global jointsPositions
 
+    # Get the wheels/legs positions
     jointsPositions = data.jointsPositions
 
     return
@@ -103,40 +82,39 @@ def callback_joints(data):
 
 
 
-# Rotina p
-
-
 
 # Rotina feedback linearization
 def compute_velocities(v, omega, joints):
 
-    #print v, " ", omega, "AAAA"
     global vel_vec
 
+    # If no cmd_vel is received -> decrease the robot speed
     if (rospy.get_rostime().to_sec() - last_cmd_vel_msg >= TIME_OUT):
+        # Consider a null cmd_vel
         v = 0
         omega = 0
-        #vel_vec = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        # Filter the command  so that the wheel speds goes to zero
         vel_vec = [0.85*vel_vec[k] for k in range(6)]
 
+
     else:
+        # Velocity for the right wheels
         VD = 1*v + (L/2.0)*omega
-        VE = 1*v - (L/2.0)*omega
         VD = VD/R
+        # Velocity for the left wheels
+        VE = 1*v - (L/2.0)*omega
         VE = VE/R
+
+        # Contruct the wheels velocity vector
         vel_vec = [-VD, -VD, -VD, VE, VE, VE]
-        rospy.get_rostime().to_sec() - last_cmd_vel_msg
 
-    SMART_LEGS=  True #Control the middle legs independntly
+
+
+    # If the middle legs must be up, controll them do do so
     if SMART_LEGS:
-        vel_vec[1] = sin(pi-joints[1])
-        vel_vec[4] = sin(pi-joints[4])
+        vel_vec[1] = sin(pi-joints[1]) # Law for the right middle leg
+        vel_vec[4] = sin(pi-joints[4]) # Law for the left middle leg
 
-        #print "joints = ", joints
-
-
-
-    #print "vel_vec = ", vel_vec
 
     return vel_vec
 
@@ -148,16 +126,16 @@ def compute_velocities(v, omega, joints):
 # Rotina primaria
 def control_6_wheels():
 
-
-
-
-
+    # Publisher for wheels velocities
     pub_velocity_cmds = rospy.Publisher("/ros_eposmcd/velocity_movement", MovementArray, queue_size=1) #declaracao do topico para comando de velocidade
+
+    # Init node
     rospy.init_node("espeleo_control") #inicializa o no "este no"
-    #rospy.Subscriber("/turtle1/cmd_vel", Twist, callback_cmd_vel) #declaracao do topico onde sera lido o estado do robo
+
+    # Subscriber for a command velocity
     rospy.Subscriber("/cmd_vel", Twist, callback_cmd_vel) #declaracao do topico onde sera lido o estado do robo
+    # Subscriber for a wheel positios
     rospy.Subscriber("/ros_eposmcd/joints_positions", EspeleoJoints, callback_joints) #declaracao do topico onde sera lido o estado do robo
-    # rospy.Subscriber("/tf", TFMessage, callback_pose)
 
     #Define uma variavel que controlar[a a frequencia de execucao deste no
     rate = rospy.Rate(freq)
@@ -166,24 +144,20 @@ def control_6_wheels():
     # O programa do no consiste no codigo dentro deste while
     while not rospy.is_shutdown(): #"Enquanto o programa nao ser assassinado"
 
-        # Aplica o feedback linearization
+        # Compute velocity of the wheels given a desired comand of velocity (v, omega)
         vel_vec = compute_velocities(v, omega, jointsPositions)
 
-        #print "Hello"
 
-
+        # Create a message with the wheels velocities
         vel_6_cmd = MovementArray()
         for k in range(6):
             vel_cmd = Movement()
             vel_cmd.nodeID = k+1
             vel_cmd.velocity = vel_vec[k]
-            #vel_cmd.gear_reduction = 1.0
-            #print "\n\nvel_cmd = \n", vel_cmd
             vel_6_cmd.movement_command.append(vel_cmd)
 
+        # Publish the message
         pub_velocity_cmds.publish(vel_6_cmd)
-
-
 
         #Espera por um tempo de forma a manter a frequencia desejada
         rate.sleep()
@@ -199,31 +173,36 @@ def control_6_wheels():
 # Funcao inicial
 if __name__ == '__main__':
 
-
-
-    # Frequencia de simulacao no stage
+    # Frequency of the loop
     global freq
     freq = 20.0  # Hz
 
-    global L #Distance between the center wheels
+    global SMART_LEGS
+    SMART_LEGS = True #Control the middle legs independntly
+
+    global L # Distance between the center wheels
     L = 0.4347
-    global R #Radius of the wheel
+    global R # Radius of the wheel
     R = 0.1997
 
+    # Forward velocity and angular velocity
     global v, omega
     v = 0
     omega = 0
+
+    # Position of the joints (wheels)
     global jointsPositions
     jointsPositions = [0, 0, 0, 0, 0, 0]
 
+    # Variables to stop the robot if not cmd vel is received after a TIME_OUT
     global last_cmd_vel_msg
     last_cmd_vel_msg = 0
     global TIME_OUT
     TIME_OUT = 0.5
 
+    # Velocities to be sent to the wheels
     global vel_vec
     vel_vec = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
 
     try:
         control_6_wheels()

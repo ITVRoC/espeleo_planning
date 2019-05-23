@@ -13,24 +13,24 @@ import numpy as np
 
 
 # -----------------------------------
-# ------ Parametros da ellipse ------
+# ------ Ellipse parameters ------
 # -----------------------------------
 global a, b, cx, cy, phi
-a = 3 #semieixo em x
-b = 2 #semieixo em y
-cx = 0 #x do centro
-cy = 0 #y do centro
-phi = 0*pi / 4 #angulo de rotacao (rad)
+a = 3 # semiaxes x
+b = 2 # semiaxes x
+cx = 0 # center x
+cy = 0 # center y
+phi = pi / 4 # ellipse rotation angle
 global cte_vel
-cte_vel = 1 # cte_vel = 1 -> trajetoria com velocidade constante; cte_vel = 0 -> parametro com velocidade constante
-# Tempo de revolucao desejado
+cte_vel = 1 # cte_vel = 1 -> trajectory with constant velocity; cte_vel = 0 -> constant speed of the parameter
+# Desired revolution time
 global T
-T = 60
+T = 40
 # -----------------------------------
 # -----------------------------------
 
 
-# Obtencao da velocidade media concordante com a, b e T
+# Obtainnment of the average speed along the ellipse
 global Vd
 Vd = 0
 dp = 0.001
@@ -38,79 +38,56 @@ for plist in range(1, 6283, 1):
     p = (float(plist) - 1) / 1000
     Vd = Vd + sqrt((a * sin(p)) ** 2 + (b * cos(p)) ** 2) * dp
 Vd = Vd / T
-# Frequencia de simulacao no stage
+# Simulation frequency
 global freq
 freq = 10.0  # Hz
 
-
-# Velocidade de saturacao
+# Saturation speed
 global Usat
-Usat = 4
+Usat = 1.5
 
 global x_n, y_n, theta_n
-x_n = 0.1  # posicao x atual do robo
-y_n = 0.2  # posicao y atual do robo
-theta_n = 0.001  # orientacao atual do robo
+x_n = 0.1  # currrente x position of the robot
+y_n = 0.2  # currrente y position of the robot
+theta_n = 0.001  # currrente theta position of the robot
 
-# Relativo ao feedback linearization
+# Distance d for the feedback linearization controller
 global d
-d = 0.6/2.0
-# Relativo ao controlador (feedforward + ganho proporcional)
+d = 0.25
+# Proportional gain for the controller
 global Kp
-Kp = 0.4
+Kp = 0.6
 
-global p_last #variavel adicional para gerar trajetoria com velocidade constante
+global p_last # additional variable to gnerate with a trajectory with constant velocity
 p_last = 0;
 
 
 
 
-# Rotina callback para a obtencao da pose do robo
+
+# Callback to detect the robot pose
 def callback_pose(data):
     global x_n, y_n, theta_n
 
+    # For every transform in the message
+    for T in data.transforms:
 
-    #print data
-    if (data.transforms[0].child_frame_id == "EspeleoRobo"):
+        # Check if the transform refers to the EspeleoRobo
+        if (T.child_frame_id == "EspeleoRobo"):
 
-        x_n = data.transforms[0].transform.translation.x  # posicao 'x' do robo no mundo
-        y_n = data.transforms[0].transform.translation.y  # posicao 'y' do robo no mundo
-        x_q = data.transforms[0].transform.rotation.x
-        y_q = data.transforms[0].transform.rotation.y
-        z_q = data.transforms[0].transform.rotation.z
-        w_q = data.transforms[0].transform.rotation.w
-        euler = euler_from_quaternion([x_q, y_q, z_q, w_q])
-        theta_n = euler[2]
+            x_n = T.transform.translation.x # x position
+            y_n = T.transform.translation.y # y position
+            z_n = T.transform.translation.z # z position
+            x_q = T.transform.rotation.x # quaternion
+            y_q = T.transform.rotation.y # quaternion
+            z_q = T.transform.rotation.z # quaternion
+            w_q = T.transform.rotation.w # quaternion
 
-        #
-        # R_vrep = Rotation.from_quat(np.array([x_q, y_q, z_q, w_q]))
-        # R_corr = Rotation.from_quat(np.array([0.0, 0.7071, 0.0, 0.7071]))
-        #
-        # R = R_vrep*R_corr
-        # # R = R_vrep*R_corr_2*R_corr
-        # # R = R_corr*R_vrep
-        #
-        # q = R.as_quat()
-        # #print euler_from_quaternion(q)
-        # euler = euler_from_quaternion(q)
-        # theta_n = euler[2]
-        # #print "theta_n = ", theta_n*180/pi
-        #
-        # #print "R_corr = \n", R_corr.as_dcm()
-        #
-        # #theta_n = euler[1]  # orientaco 'theta' do robo no mundo ???????????????????????????
-        #
-        # print "[x_n, y_n, theta_n] = ", x_n, " ", y_n, " ",theta_n*180/pi
-        #
-        # print "R = \n", R.as_dcm().tolist()[0]
-        # print "", R.as_dcm().tolist()[1]
-        # print "", R.as_dcm().tolist()[2]
-
+            euler = euler_from_quaternion([x_q, y_q, z_q, w_q])
+            theta_n = euler[2]
 
 
     return
-
-
 # ----------  ----------  ----------  ----------  ----------
 
 
@@ -118,20 +95,24 @@ def callback_pose(data):
 
 
 
-# Rotina para mapear o tempo no parametro p
+# Routine to map the time t in the parameter p(t)
+# This is used to obtain a trajectory with constant speed
 def map_time_p(time):
     global freq
     global T, Vd
     global a, b
     global p_last
 
+    # If a constant speed trajectory is wanted
     if(cte_vel == 1):
         dpdt = Vd/sqrt((a*sin(p_last))**2+(b*cos(p_last))**2)
         p = p_last + dpdt*(1/freq)
         p_last = p
+
+    # If the original trajectory is wanted (the ispeed is coupled to the parametrization)
     else:
-        T = 40 #periodo de ciclo
-        p = 2*pi*time/T #parametro
+        T = 40 # cycle period
+        p = 2*pi*time/T # parameter
         dpdt = 2*pi/T
 
     return p, dpdt
@@ -140,32 +121,23 @@ def map_time_p(time):
 
 
 
-# Rotina para a geracao da trajetoria de referencia
+# Function to generate a reference trajectory
 def refference_trajectory(time):
 
+    # Get the appropriate parameter'
     [p, dpdt] = map_time_p(time)
 
+    # Reference for position without rotation and translation
     x_ref0 = a * cos(p)
     y_ref0 = b * sin(p)
 
-    # H = [cos(phi) -sin(phi) cx
-    #     sin(phi)  cos(phi) cy
-    #     0         0        1]
+    # Reference for position after rotation and translation
     x_ref = cos(phi) * x_ref0 - sin(phi) * y_ref0 + cx * 1
     y_ref = sin(phi) * x_ref0 + cos(phi) * y_ref0 + cy * 1
 
+    # Derivative of the trajectory
     Vx_ref = cos(phi) * (-a * sin(p)) * dpdt - sin(phi) * (b * cos(p)) * dpdt
     Vy_ref = sin(phi) * (-a * sin(p)) * dpdt + cos(phi) * (b * cos(p)) * dpdt
-
-    #x_ref = 2.0
-    #y_ref = 2.0
-    #Vx_ref = 0.0
-    #Vy_ref = 0.0
-
-    #global Vd
-    #print "Modulo de V_d   -> ", Vd
-    #print "Modulo de V_ref -> ", sqrt(Vx_ref ** 2 + Vy_ref ** 2)
-    #print "Conta de V_ref  -> ", sqrt((a*sin(p))**2 + (b*cos(p))**2)*dpdt
 
     return (x_ref, y_ref, Vx_ref, Vy_ref)
 
@@ -180,18 +152,16 @@ def trajectory_controller(x_ref, y_ref, Vx_ref, Vy_ref):
     global Kp
     global Usat
 
+    # Controller - proportional plus feedforward
     Ux = Vx_ref + Kp * (x_ref - x_n)
     Uy = Vy_ref + Kp * (y_ref - y_n)
 
-    # print "erro_pos = ", (x_ref - x_n), " ", (y_ref - y_n)
-
+    # Saturation of the control signal
     absU = sqrt(Ux ** 2 + Uy ** 2)
-
     if (absU > Usat):
         Ux = Usat * Ux / absU
         Uy = Usat * Uy / absU
 
-    # print "Ux, Uy = ", Ux, Uy
 
     return (Ux, Uy)
 
@@ -200,15 +170,14 @@ def trajectory_controller(x_ref, y_ref, Vx_ref, Vy_ref):
 
 
 
-# Rotina feedback linearization
+# Feedback linearization
 def feedback_linearization(Ux, Uy):
     global x_n, y_n, theta_n
     global d
 
+    # Transform (Vx, Vy) in (v, omega) using feedback linearization
     VX = cos(theta_n) * Ux + sin(theta_n) * Uy
     WZ = (-sin(theta_n) / d) * Ux + (cos(theta_n) / d) * Uy
-
-    # print "Ux, Uy = ", Ux, Uy
 
     return (VX, WZ)
 
@@ -217,14 +186,14 @@ def feedback_linearization(Ux, Uy):
 
 
 
-# Rotina executada apenas uma vez para mostrar a ellipse no rviz
+# Routine to send the ellipse for the rviz
 def send_ellipse_to_rviz():
     global a, b, cx, cy, phi
 
     points_marker = MarkerArray()
     marker = Marker()
     for p0 in range(1, 628, 1):
-        print "p0 = ", p0
+        #print "p0 = ", p0
         p = p0 / 100.0
         x = cos(phi) * (a * cos(p)) - sin(phi) * (b * sin(p)) + cx * 1
         y = sin(phi) * (a * cos(p)) + cos(phi) * (b * sin(p)) + cy * 1
@@ -245,7 +214,7 @@ def send_ellipse_to_rviz():
         marker.pose.position.x = x
         marker.pose.position.y = y
         marker.pose.position.z = 0
-        print "marker = ", marker
+        #print "marker = ", marker
         points_marker.markers.append(marker)
 
     return (points_marker)
@@ -254,7 +223,7 @@ def send_ellipse_to_rviz():
 
 
 
-# Rotina para piblicar informacoes no rviz
+# One more routine to bublish information to rviz
 def send_marker_to_rviz(x_ref, y_ref, Vx_ref, Vy_ref, Ux, Uy):
     global x_n, y_n, theta_n
     global x_goal, y_goal
@@ -315,7 +284,7 @@ def send_marker_to_rviz(x_ref, y_ref, Vx_ref, Vy_ref, Ux, Uy):
 
 
 
-# Rotina primaria
+# Primary function
 def ellipse():
     global freq
     global x_n, y_n, theta_n
@@ -325,61 +294,48 @@ def ellipse():
 
     i = 0
 
-    vel.linear.x = 0
-    vel.linear.y = 0
-    vel.linear.z = 0
-    vel.angular.x = 0
-    vel.angular.y = 0
-    vel.angular.z = 0
-
+    # Publisher for a command velocity
     pub_stage = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
+    # Init node
     rospy.init_node("ellipse")
+    # Subscribe to the position of the robot
     rospy.Subscriber("/tf", TFMessage, callback_pose)
+    # Publisher to visualize the ellipse on rviz
+    pub_rviz_ellipse = rospy.Publisher("/visualization_marker_array", MarkerArray, queue_size=1)
 
-    # pub_rviz_ref = rospy.Publisher("/visualization_marker_ref", Marker, queue_size=1) #rviz marcador de velocidade de referencia
-    # pub_rviz_pose = rospy.Publisher("/visualization_marker_pose", Marker, queue_size=1) #rviz marcador de velocidade do robo
-    # pub_rviz_ellipse = rospy.Publisher("/visualization_marker_array", MarkerArray, queue_size=1) #rviz array de marcadores no espaco da elipse
 
     rate = rospy.Rate(freq)
 
-    #pointsMarker = send_ellipse_to_rviz()
 
     sleep(1)
+
+    # Send ellipse to rviz
+    pointsMarker = send_ellipse_to_rviz()
+    pub_rviz_ellipse.publish(pointsMarker)
 
     while not rospy.is_shutdown():
 
         i = i + 1
         time = i / float(freq)
 
+        # Get the trajectory
         [x_ref, y_ref, Vx_ref, Vy_ref] = refference_trajectory(time)
-        #print "[x_ref, y_ref] = ", x_ref, y_ref
-        #print "[Vx_ref, Vy_ref] = ", Vx_ref, Vy_ref
 
+        # Compute control signals for x and y velocities
         [Ux, Uy] = trajectory_controller(x_ref, y_ref, Vx_ref, Vy_ref)
-        #print "[Ux, Uy] = ", Ux, Uy
 
+        # Compute control signals for v and omega
         [V_forward, w_z] = feedback_linearization(Ux, Uy)
-        #print "[V_forward, w_z] = ", V_forward, w_z
 
-        #print "time", time
-        #V_forward = 0.2
-        #w_z = 0.0
-
-        #print "[V_forward, w_z] = [", V_forward, ", ", w_z,"]"
-
-        #print "---------- ---------- ----------"
-
-        # send_marker_to_rviz(x_ref, y_ref, Vx_ref, Vy_ref, Ux, Uy)
-
+        # Construct the message
         vel.linear.x = V_forward
         vel.angular.z = w_z
 
+        # Publish message
         pub_stage.publish(vel)
-        # pub_rviz_ellipse.publish(pointsMarker)
+
 
         rate.sleep()
-
-
 # ---------- !! ---------- !! ---------- !! ---------- !! ----------
 
 
