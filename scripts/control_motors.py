@@ -9,35 +9,41 @@ from visualization_msgs.msg import Marker, MarkerArray
 import tf
 import sys
 from ros_eposmcd_msgs.msg import Movement, MovementArray, EspeleoJoints
-
-
 from tf2_msgs.msg import TFMessage
 import numpy as np
 
 
+"""
+Universidade Federal de Minas Gerais (UFMG) - 2019
+Laboraorio CORO
+Instituto Tecnologico Vale (ITV)
+Contact:
+Adriano M. C. Rezende, <adrianomcr18@gmail.com>
+"""
 
 
 
-# Rotina callback para a obtencao da pose do robo
+# Callback to get the pose of the robot
 def callback_pose(data):
-    global x_n, y_n, theta_n
+    global pos, rpy
 
-    # For every transform in the message
     for T in data.transforms:
-
-        # Check if the transform refers to the EspeleoRobo
+        # Chose the transform of the EspeleoRobo
         if (T.child_frame_id == "EspeleoRobo"):
 
-            x_n = T.transform.translation.x # x position
-            y_n = T.transform.translation.y # y position
-            z_n = T.transform.translation.z # z position
-            x_q = T.transform.rotation.x # quaternion
-            y_q = T.transform.rotation.y # quaternion
-            z_q = T.transform.rotation.z # quaternion
-            w_q = T.transform.rotation.w # quaternion
+            # Get the orientation
+            x_q = T.transform.rotation.x
+            y_q = T.transform.rotation.y
+            z_q = T.transform.rotation.z
+            w_q = T.transform.rotation.w
+            euler = euler_from_quaternion([x_q, y_q, z_q, w_q])
+            theta_n = euler[2]
 
-            br = tf.TransformBroadcaster()
-            br.sendTransform((x_n, y_n, z_n), (x_q, y_q, z_q, w_q), rospy.Time.now(), "/EspeleoRobo", "world")
+            # Get the position
+            pos[0] = T.transform.translation.x
+            pos[1] = T.transform.translation.y
+            pos[2] = T.transform.translation.z
+            rpy = euler
 
     return
 # ----------  ----------  ----------  ----------  ----------
@@ -55,8 +61,6 @@ def callback_cmd_vel(data):
     # Get the command velocities
     v = data.linear.x
     omega = data.angular.z
-
-    print "[v, omega] = [", v,", ",omega,"]"
 
     # Update the "last command received" variable
     last_cmd_vel_msg = rospy.get_rostime().to_sec()
@@ -93,9 +97,8 @@ def compute_velocities(v, omega, joints):
         # Consider a null cmd_vel
         v = 0
         omega = 0
-        # Filter the command  so that the wheel speds goes to zero
+        # Filter the command  so that the wheel speds goes to zero exponentially
         vel_vec = [0.85*vel_vec[k] for k in range(6)]
-
 
     else:
         # Velocity for the right wheels
@@ -109,11 +112,12 @@ def compute_velocities(v, omega, joints):
         vel_vec = [-VD, -VD, -VD, VE, VE, VE]
 
 
-
     # If the middle legs must be up, controll them do do so
     if SMART_LEGS:
-        vel_vec[1] = sin(pi-joints[1]) # Law for the right middle leg
-        vel_vec[4] = sin(pi-joints[4]) # Law for the left middle leg
+        vel_vec[1] = 5*sin(pi-joints[1]) # Law for the right middle leg
+        vel_vec[4] = 5*sin(pi-joints[4]) # Law for the left middle leg
+        #vel_vec[1] = pi-joints[1] # Law for the right middle leg
+        #vel_vec[4] = pi-joints[4] # Law for the left middle leg
 
 
     return vel_vec

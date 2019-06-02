@@ -12,11 +12,16 @@ from time import sleep
 import numpy as np
 
 
+"""
+Universidade Federal de Minas Gerais (UFMG) - 2019
+Laboraorio CORO
+Instituto Tecnologico Vale (ITV)
+Contact:
+Adriano M. C. Rezende, <adrianomcr18@gmail.com>
+"""
 
 
-# [Adriano] This code will be commented soon
-
-
+# Callback for the accelerometer data
 def callback_acc(data):
     global accel
 
@@ -29,6 +34,7 @@ def callback_acc(data):
 # ----------  ----------  ----------  ----------  ----------
 
 
+# Callback for the gyro data
 def callback_gyro(data):
     global gyro
 
@@ -58,7 +64,7 @@ def filter(R, q, rpy, accel, gyro):
 
     global freq
 
-    print "rpy = \n", rpy, "\n"
+    #print "rpy = \n", rpy, "\n"
 
     Jr = Jacobian_of_reprsentation(rpy)
 
@@ -102,11 +108,12 @@ def imunode():
     odom_msg.child_frame_id = "EspeleoRobo"
 
 
-    pub_imu = rospy.Publisher("/ros_eposmcd/imu", Imu, queue_size=1)
-    pub_odom = rospy.Publisher("/ros_eposmcd/odom", Odometry, queue_size=1)
+    pub_imu = rospy.Publisher("/espeleo/imu_raw", Imu, queue_size=1)
+    #pub_imu = rospy.Publisher("/imu/data_raw", Imu, queue_size=1)
+    pub_odom = rospy.Publisher("/espeleo/odom", Odometry, queue_size=1)
     rospy.init_node("ellipse")
-    rospy.Subscriber("/ros_eposmcd/acc", Point, callback_acc)
-    rospy.Subscriber("/ros_eposmcd/gyro", Point, callback_gyro)
+    rospy.Subscriber("/sensors/acc", Point, callback_acc)
+    rospy.Subscriber("/sensors/gyro", Point, callback_gyro)
 
     # pub_rviz_ref = rospy.Publisher("/visualization_marker_ref", Marker, queue_size=1) #rviz marcador de velocidade de referencia
     # pub_rviz_pose = rospy.Publisher("/visualization_marker_pose", Marker, queue_size=1) #rviz marcador de velocidade do robo
@@ -126,41 +133,26 @@ def imunode():
         i = i + 1
         time = i / float(freq)
 
-        #print "imu_msg =\n", imu_msg, "\n"
-
-
-        [R, q, rpy] = filter(R, q, rpy, accel, gyro)
-
-
-        # COLOCAR AQUI O FILTRO
-        # PREDICAO
-        # CORRECAO
-
-
-
-
         imu_msg.header.stamp = rospy.Time.now();
 
-        imu_msg.orientation.x = q[0].tolist()
-        imu_msg.orientation.y = q[1].tolist()
-        imu_msg.orientation.z = q[2].tolist()
-        imu_msg.orientation.w = q[3].tolist()
 
         imu_msg.angular_velocity.x = gyro[0]
         imu_msg.angular_velocity.y = gyro[1]
         imu_msg.angular_velocity.z = gyro[2]
+        imu_msg.angular_velocity_covariance = [0.2, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1, 0.1, 0.2]
 
         imu_msg.linear_acceleration.x = accel[0]
         imu_msg.linear_acceleration.y = accel[1]
         imu_msg.linear_acceleration.z = accel[2]
+        imu_msg.linear_acceleration_covariance = [0.2, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1, 0.1, 0.2]
 
         pub_imu.publish(imu_msg)
 
 
 
 
-        #print odom_msg
 
+        # Create odom message
         odom_msg.header.stamp = rospy.Time.now();
         #odom_msg.pose.pose.position.x = p[0]
         #odom_msg.pose.pose.position.y = p[1]
@@ -170,13 +162,8 @@ def imunode():
         odom_msg.pose.pose.orientation.z = q[2]
         odom_msg.pose.pose.orientation.w = q[3]
 
+        #Publish odom message
         pub_odom.publish(odom_msg)
-
-
-
-
-
-
 
         rate.sleep()
 
