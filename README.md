@@ -21,8 +21,13 @@ This code implements a vetor field method to cenerage input commands to the robo
 
 
 **Usage:**
-With vrep running and the vec_field_node.py also running, this conde ca be called as bellow:
+
+With roscore and vrep running (in this order), run the following launch flie:
+
+`roslaunch espeleo_planning basic.launch`
+
+Now, the robot is already waiting for a trajectory to be followed. An example trajectory can be generated with the following command:
 
 `rosrun espeleo_planning example_trajectories.py 1 200`
 
-It will then the example curve number 1 with 200 sampled points
+It will then generate the example curve number 1 with 200 sampled points. The robot must start to follow the curve.
