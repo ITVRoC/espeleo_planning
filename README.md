@@ -24,7 +24,7 @@ This code implements a vetor field method to cenerage input commands to the robo
 
 With roscore and vrep running (in this order), run the following launch flie:
 
-`roslaunch espeleo_planning basic.launch`
+`roslaunch espeleo_vrep_simulation basic.launch`
 
 Now, the robot is already waiting for a trajectory to be followed. An example trajectory can be generated with the following command:
 
