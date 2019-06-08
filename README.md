@@ -4,7 +4,7 @@ This repository contains codes for the high level control of the espeleorobo in 
 
 
 ## Scripts included on this package:
-- example_trajectories.py: Given a desired path generates a Twist command to the robot
+- example_trajectories.py: Generates a example path to be followed by the robot
 
 
 
@@ -18,6 +18,9 @@ This code implements a vetor field method to cenerage input commands to the robo
 - `/espeleo/traj_points`  (message type:`geometry_msgs/Polygon`): Subscribe to this topic to get a sequence of points representing a path
 
 **Input parameters:**
+
+- `first parameter`:  number of example curve to be generated, from 1 to 3
+- `second parameter`:  number of points of the curve to be sampled, 200 for example
 
 
 **Usage:**
