@@ -1,0 +1,37 @@
+
+#Parameters for the espeleo_planning package
+
+# Curve number
+N_curve: 3
+# 1 -> Ellipse
+# 2 -> Eigth like curve
+# 3 -> Square like curve
+
+# Number of points to be sampled
+N_points: 500
+
+# Stretch factor of the curve in the x direction
+a: 8.0
+# Stretch factor of the curve in the y direction
+b: 4.0
+# Rotation of the curve around the z axis (in dregrees)
+phi: 45.0
+# Displacement in the x direction (meters)
+cx: 0.0
+# Displacement in the y direction (meters)
+cy: 0.0
+
+
+
+
+
+
+#Chose Dijkstra trajectory
+dijkstra_traj_number: 1
+# 1 -> Dijkstra Points Combined
+# 2 -> Dijkstra Points Energy
+# 3 -> Dijkstra Points Shortest
+# 4 -> Dijkstra Points Transversal
+
+
+

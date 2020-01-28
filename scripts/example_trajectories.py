@@ -29,12 +29,14 @@ Adriano M. C. Rezende, <adrianomcr18@gmail.com>
 # Function to generate a reference curve - "8"
 def refference_trajectory_1(N):
 
+    global a, b, phi, cx, cy
+
     # Geometric parameters
-    a = 3.0 # height of the "8"
-    b = 1.5 # width of the "8"
-    cx = 0 # center x
-    cy = 0 # center y
-    phi = pi / 4 # rotation angle of the curve
+    # a = 3.0 # height of the "8"
+    # b = 1.5 # width of the "8"
+    # cx = 0 # center x
+    # cy = 0 # center y
+    # phi = pi / 4 # rotation angle of the curve
 
     # Parameter
     dp = 2*pi/N
@@ -69,13 +71,14 @@ def refference_trajectory_1(N):
 # Function to generate a reference curve - ellipse
 def refference_trajectory_2(N):
 
+    global a, b, phi, cx, cy
 
     # Geometric parameters
-    a = 3 # semiaxis x
-    b = 1.5 # semiaxis y
-    cx = 0 # center x
-    cy = 0 # center y
-    phi = pi / 4 # rotation angle of the curve
+    # a = 3 # semiaxis x
+    # b = 1.5 # semiaxis y
+    # cx = 0 # center x
+    # cy = 0 # center y
+    # phi = pi / 4 # rotation angle of the curve
 
     # Parameter
     dp = 2*pi/N
@@ -109,13 +112,15 @@ def refference_trajectory_2(N):
 # Rotina para a geracao da trajetoria de "rectangular"
 def refference_trajectory_3(N):
 
+    global a, b, phi, cx, cy
+
     # Geometric parameters
-    a = 2**(-4) #
-    b = 0 #
-    c = 2**(-4) #
-    cx = 0 # center x
-    cy = 0 # cewnter y
-    phi = 0 # rotation angle of the curve
+    # a = 2**(-4) #
+    # b = 0 #
+    # c = 2**(-4) #
+    # cx = 0 # center x
+    # cy = 0 # cewnter y
+    # phi = 0 # rotation angle of the curve
 
     # Parameter
     dp = 2*pi/N
@@ -128,9 +133,9 @@ def refference_trajectory_3(N):
         p = p + dp
 
         # Compute a point of the "rectangular" in a local frame
-        r = (a*cos(p)**4 + b*cos(p)**2*sin(p)**2 + c*sin(p)**4)**(-0.25)
-        x_ref0 = r * cos(p)
-        y_ref0 = r * sin(p)
+        r = (1.0*cos(p)**4 + 0.0*cos(p)**2*sin(p)**2 + 1.0*sin(p)**4)**(-0.25)
+        x_ref0 = a * r * cos(p)
+        y_ref0 = b * r * sin(p)
 
         # Rotate and displace the point
         x_ref = cos(phi) * x_ref0 - sin(phi) * y_ref0 + cx * 1
@@ -317,10 +322,26 @@ if __name__ == '__main__':
     freq = 10.0  # Hz
 
     # Input parameters
-    global curve_number, number_of_samples
+    global curve_number, number_of_samples, a, b, phi, cx, cy
     # Obtain the parameters
-    curve_number = int(sys.argv[1])
-    number_of_samples = int(sys.argv[2])
+
+    # try:
+    #     curve_number = int(sys.argv[1])
+    #     number_of_samples = int(sys.argv[2])
+    # except:
+    #     print "\33[93mCurve number and number of points not specified node call!\33[0m"
+
+    try:
+        curve_number = int(rospy.get_param("/trajectory_planner/N_curve"));
+        number_of_samples = int(rospy.get_param("/trajectory_planner/N_points"));
+        a = int(rospy.get_param("/trajectory_planner/a"));
+        b = int(rospy.get_param("/trajectory_planner/b"));
+        phi = int(rospy.get_param("/trajectory_planner/phi"))*(3.1415926535/180.0);
+        cx = int(rospy.get_param("/trajectory_planner/cx"));
+        cy = int(rospy.get_param("/trajectory_planner/cy"));
+    except:
+        print "\33[91mA problem occurred when trying to read the parameters!\33[0m"
+
 
 
     try:

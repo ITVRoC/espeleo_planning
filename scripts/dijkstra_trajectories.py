@@ -187,8 +187,11 @@ if __name__ == '__main__':
     # Input parameters
     global curve_number, number_of_samples
     # Obtain the parameters
-    curve_number = int(sys.argv[1])
-    #number_of_samples = int(sys.argv[2])
+    # curve_number = int(sys.argv[1])
+    try:
+        curve_number = int(rospy.get_param("/trajectory_planner/dijkstra_traj_number"));
+    except:
+        print "\33[91mA problem occurred when trying to read the parameters!\33[0m"
 
 
     try:
