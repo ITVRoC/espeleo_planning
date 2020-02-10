@@ -11,13 +11,13 @@ N_curve: 3
 N_points: 500
 
 # Stretch factor of the curve in the x direction
-a: 8.0
+a: 4.0
 # Stretch factor of the curve in the y direction
-b: 4.0
+b: 3.0
 # Rotation of the curve around the z axis (in dregrees)
 phi: 45.0
 # Displacement in the x direction (meters)
-cx: 0.0
+cx: -1.0
 # Displacement in the y direction (meters)
 cy: 0.0
 
@@ -32,6 +32,3 @@ dijkstra_traj_number: 1
 # 2 -> Dijkstra Points Energy
 # 3 -> Dijkstra Points Shortest
 # 4 -> Dijkstra Points Transversal
-
-
-

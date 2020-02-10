@@ -8,7 +8,6 @@ from time import sleep
 from visualization_msgs.msg import Marker, MarkerArray
 import tf
 from tf2_msgs.msg import TFMessage
-# from scipy.spatial.transform import Rotation
 import numpy as np
 import sys
 
@@ -22,12 +21,50 @@ Adriano M. C. Rezende, <adrianomcr18@gmail.com>
 """
 
 
+# Function to generate a reference curve - ellipse
+def refference_trajectory_1(N):
+
+    global a, b, phi, cx, cy
+
+    # Geometric parameters
+    # a = 3 # semiaxis x
+    # b = 1.5 # semiaxis y
+    # cx = 0 # center x
+    # cy = 0 # center y
+    # phi = pi / 4 # rotation angle of the curve
+
+    # Parameter
+    dp = 2*pi/N
+    p = -dp
+
+    # Loop to sample the curve
+    traj = [[],[]]
+    for k in range(N):
+
+        # Increment parameter
+        p = p + dp
+
+        # Compute a point of the ellipse in a local frame
+        x_ref0 = a * cos(p)
+        y_ref0 = b * sin(p)
+
+        # Rotate and displace the point
+        x_ref = cos(phi) * x_ref0 - sin(phi) * y_ref0 + cx * 1
+        y_ref = sin(phi) * x_ref0 + cos(phi) * y_ref0 + cy * 1
+
+        # Save the computed point
+        traj[0].append(x_ref)
+        traj[1].append(y_ref)
+
+    return (traj)
+
+# ----------  ----------  ----------  ----------  ----------
 
 
 
 
 # Function to generate a reference curve - "8"
-def refference_trajectory_1(N):
+def refference_trajectory_2(N):
 
     global a, b, phi, cx, cy
 
@@ -65,47 +102,6 @@ def refference_trajectory_1(N):
 # ----------  ----------  ----------  ----------  ----------
 
 
-
-
-
-# Function to generate a reference curve - ellipse
-def refference_trajectory_2(N):
-
-    global a, b, phi, cx, cy
-
-    # Geometric parameters
-    # a = 3 # semiaxis x
-    # b = 1.5 # semiaxis y
-    # cx = 0 # center x
-    # cy = 0 # center y
-    # phi = pi / 4 # rotation angle of the curve
-
-    # Parameter
-    dp = 2*pi/N
-    p = -dp
-
-    # Loop to sample the curve
-    traj = [[],[]]
-    for k in range(N):
-
-        # Increment parameter
-        p = p + dp
-
-        # Compute a point of the ellipse in a local frame
-        x_ref0 = a * cos(p)
-        y_ref0 = b * sin(p)
-
-        # Rotate and displace the point
-        x_ref = cos(phi) * x_ref0 - sin(phi) * y_ref0 + cx * 1
-        y_ref = sin(phi) * x_ref0 + cos(phi) * y_ref0 + cy * 1
-
-        # Save the computed point
-        traj[0].append(x_ref)
-        traj[1].append(y_ref)
-
-    return (traj)
-
-# ----------  ----------  ----------  ----------  ----------
 
 
 
@@ -298,14 +294,11 @@ def trajectory():
 
 
 
-
     while not rospy.is_shutdown():
 
         rate.sleep()
 
         break
-
-
 
 # ---------- !! ---------- !! ---------- !! ---------- !! ----------
 
@@ -322,25 +315,20 @@ if __name__ == '__main__':
     freq = 10.0  # Hz
 
     # Input parameters
-    global curve_number, number_of_samples, a, b, phi, cx, cy
+    global pkg_path, curve_number, number_of_samples, a, b, phi, cx, cy
     # Obtain the parameters
 
-    # try:
-    #     curve_number = int(sys.argv[1])
-    #     number_of_samples = int(sys.argv[2])
-    # except:
-    #     print "\33[93mCurve number and number of points not specified node call!\33[0m"
-
     try:
+        pkg_path = rospy.get_param("/trajectory_planner/pkg_path");
         curve_number = int(rospy.get_param("/trajectory_planner/N_curve"));
         number_of_samples = int(rospy.get_param("/trajectory_planner/N_points"));
-        a = int(rospy.get_param("/trajectory_planner/a"));
-        b = int(rospy.get_param("/trajectory_planner/b"));
-        phi = int(rospy.get_param("/trajectory_planner/phi"))*(3.1415926535/180.0);
-        cx = int(rospy.get_param("/trajectory_planner/cx"));
-        cy = int(rospy.get_param("/trajectory_planner/cy"));
+        a = float(rospy.get_param("/trajectory_planner/a"));
+        b = float(rospy.get_param("/trajectory_planner/b"));
+        phi = float(rospy.get_param("/trajectory_planner/phi"))*(3.1415926535/180.0);
+        cx = float(rospy.get_param("/trajectory_planner/cx"));
+        cy = float(rospy.get_param("/trajectory_planner/cy"));
     except:
-        print "\33[91mA problem occurred when trying to read the parameters!\33[0m"
+        print "\33[41m problem occurred when trying to read the parameters!\33[0m"
 
 
 

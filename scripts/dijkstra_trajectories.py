@@ -28,7 +28,7 @@ Adriano M. C. Rezende, <adrianomcr18@gmail.com>
 # Function to read a reference curve from a txt file
 def read_txt_trajectory(id):
 
-    path = '/home/adrianomcr/ROS_projects/vale_ws/src/espeleo_planning/txt_trajectories/traj_'+str(id)+'.txt'
+    path = pkg_path+"/txt_trajectories/traj_"+str(id)+".txt"
 
     traj = [[],[],[]]
 
@@ -185,13 +185,14 @@ if __name__ == '__main__':
     freq = 10.0  # Hz
 
     # Input parameters
-    global curve_number, number_of_samples
+    global pkg_path, curve_number, number_of_samples
     # Obtain the parameters
     # curve_number = int(sys.argv[1])
     try:
+        pkg_path = rospy.get_param("/trajectory_planner/pkg_path");
         curve_number = int(rospy.get_param("/trajectory_planner/dijkstra_traj_number"));
     except:
-        print "\33[91mA problem occurred when trying to read the parameters!\33[0m"
+        print "\33[41m problem occurred when trying to read the parameters!\33[0m"
 
 
     try:
