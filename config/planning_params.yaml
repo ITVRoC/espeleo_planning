@@ -11,15 +11,15 @@ N_curve: 3
 N_points: 500
 
 # Stretch factor of the curve in the x direction
-a: 4.0
+a: 2.8
 # Stretch factor of the curve in the y direction
-b: 3.0
+b: 2.8
 # Rotation of the curve around the z axis (in dregrees)
-phi: 45.0
+phi: 0.0
 # Displacement in the x direction (meters)
-cx: -1.0
+cx: 1.0
 # Displacement in the y direction (meters)
-cy: 0.0
+cy: 1.5
 
 
 

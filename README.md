@@ -31,6 +31,7 @@ Parameters for the example trajectories:
 - `cx`: displacement in the x direction (meters)
 - `cy`: displacement in the y direction (meters)
 
+
 Parameters for choosing the Dijkstra trajectory:
 - `dijkstra_traj_number`: Number of the Dijkstra trajectory
 
