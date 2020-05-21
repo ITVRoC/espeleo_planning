@@ -192,7 +192,7 @@ if __name__ == '__main__':
         pkg_path = rospy.get_param("/trajectory_planner/pkg_path");
         curve_number = int(rospy.get_param("/trajectory_planner/dijkstra_traj_number"));
     except:
-        print "\33[41m problem occurred when trying to read the parameters!\33[0m"
+        print "\33[41mProblem occurred when trying to read the parameters!: dijkstra_trajectories.py\33[0m"
 
 
     try:

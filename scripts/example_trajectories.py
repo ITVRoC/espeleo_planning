@@ -282,11 +282,11 @@ def trajectory():
     # Publish the message
     pub_traj.publish(traj_msg)
 
-    print "----------------------------"
-    print "Curve created and publhished"
-    print "Curve type: ", curve_number
-    print "Sampled samples: ", number_of_samples
-    print "----------------------------"
+    print "\33[99m----------------------------\33[99m"
+    print "\33[99mCurve created and publhished\33[99m"
+    print "\33[99mCurve type: ", curve_number, "\33[99m"
+    print "\33[99mSampled samples: ", number_of_samples, "\33[99m"
+    print "\33[99m----------------------------\33[99m"
 
     # Send curve to rviz
     sleep(1.0)
@@ -316,8 +316,8 @@ if __name__ == '__main__':
 
     # Input parameters
     global pkg_path, curve_number, number_of_samples, a, b, phi, cx, cy
+    
     # Obtain the parameters
-
     try:
         pkg_path = rospy.get_param("/trajectory_planner/pkg_path");
         curve_number = int(rospy.get_param("/trajectory_planner/N_curve"));
@@ -328,7 +328,7 @@ if __name__ == '__main__':
         cx = float(rospy.get_param("/trajectory_planner/cx"));
         cy = float(rospy.get_param("/trajectory_planner/cy"));
     except:
-        print "\33[41m problem occurred when trying to read the parameters!\33[0m"
+        print "\33[41mProblem occurred when trying to read the parameters!: example_trajectories.py\33[0m"
 
 
 
