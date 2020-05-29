@@ -21,7 +21,7 @@ Adriano M. C. Rezende, <adrianomcr18@gmail.com>
 """
 
 
-# Function to generate a reference curve - ellipse
+# Function to generate an ellipse path
 def refference_trajectory_1(N):
 
     global a, b, phi, cx, cy
@@ -63,7 +63,7 @@ def refference_trajectory_1(N):
 
 
 
-# Function to generate a reference curve - "8"
+# Function to generate an "8 like" path
 def refference_trajectory_2(N):
 
     global a, b, phi, cx, cy
@@ -98,6 +98,8 @@ def refference_trajectory_2(N):
         traj[0].append(x_ref)
         traj[1].append(y_ref)
 
+
+
     return (traj)
 # ----------  ----------  ----------  ----------  ----------
 
@@ -105,7 +107,7 @@ def refference_trajectory_2(N):
 
 
 
-# Rotina para a geracao da trajetoria de "rectangular"
+# Function to generate a "rectangular" path
 def refference_trajectory_3(N):
 
     global a, b, phi, cx, cy
@@ -145,9 +147,51 @@ def refference_trajectory_3(N):
 # ----------  ----------  ----------  ----------  ----------
 
 
-""" # CREATE HERE A NEW CURVE
-# Rotina para a geracao da trajetoria de "??"
+
+
+# Function to generate a "sinoidal" path - That is an open path
 def refference_trajectory_4(N):
+
+    global a, b, phi, cx, cy
+
+    # Geometric parameters
+    # a = 2**(-4) #
+    # b = 0 #
+    # c = 2**(-4) #
+    # cx = 0 # center x
+    # cy = 0 # cewnter y
+    # phi = 0 # rotation angle of the curve
+
+    # Parameter
+    dp = 2*pi/N
+    p = -dp
+
+    traj = [[],[]]
+    for k in range(N):
+
+        # Increment parameter
+        p = p + dp
+
+        # Compute a point of the "rectangular" in a local frame
+        x_ref0 = p-pi
+        y_ref0 = sin(x_ref0)
+
+        # Rotate and displace the point
+        x_ref = cos(phi) * x_ref0 - sin(phi) * y_ref0 + cx * 1
+        y_ref = sin(phi) * x_ref0 + cos(phi) * y_ref0 + cy * 1
+
+        # Save the computed point
+        traj[0].append(x_ref)
+        traj[1].append(y_ref)
+
+    return (traj)
+# ----------  ----------  ----------  ----------  ----------
+
+
+
+""" # CREATE HERE A NEW CURVE
+# Function to generate a "??" path
+def refference_trajectory_5(N):
 
     # Geometric parameters
     # a = ... # PLACE HERE YOUR PARAMETER
@@ -252,8 +296,8 @@ def trajectory():
     global pub_rviz_ref, pub_rviz_pose
 
 
-    pub_traj = rospy.Publisher("/espeleo/traj_points", Polygon, queue_size=1)
-    pub_rviz_curve = rospy.Publisher("/visualization_marker_array", MarkerArray, queue_size=1)
+    pub_traj = rospy.Publisher("/espeleo/traj_points", Polygon, queue_size=10)
+    pub_rviz_curve = rospy.Publisher("/visualization_trajectory", MarkerArray, queue_size=1)
     rospy.init_node("trajectory_planner")
 
     # Wait a bit
@@ -267,9 +311,11 @@ def trajectory():
         traj = refference_trajectory_2(number_of_samples)
     elif curve_number == 3:
         traj = refference_trajectory_3(number_of_samples)
+    elif curve_number == 4:
+        traj = refference_trajectory_4(number_of_samples)
     # PLACE HERE A NEW FUNCTION
-    # elif curve_number == 4:
-    #     traj = refference_trajectory_4(number_of_samples)
+    # elif curve_number == 5:
+    #     traj = refference_trajectory_5(number_of_samples)
     else:
         print "Invalid curve_number !"
 
