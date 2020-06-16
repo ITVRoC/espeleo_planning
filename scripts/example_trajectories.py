@@ -10,6 +10,7 @@ import tf
 from tf2_msgs.msg import TFMessage
 import numpy as np
 import sys
+from espeleo_control.msg import Path
 
 
 """
@@ -228,11 +229,30 @@ def refference_trajectory_5(N):
 """
 
 
+# # Function to create a message of the type polygon, which will carry the points of the curve
+# def create_traj_msg(traj):
+#
+#     # Create 'Polygon' message (array of messages of type 'Point')
+#     traj_msg = Polygon()
+#     p = Point()
+#     for k in range(len(traj[0])):
+#         # Create point
+#         p = Point()
+#         # Atribute values
+#         p.x = traj[0][k]
+#         p.y = traj[1][k]
+#         p.z = 0.0
+#         # Append point to polygon
+#         traj_msg.points.append(p)
+#
+#     return traj_msg
+# # ----------  ----------  ----------  ----------  ----------
+
 # Function to create a message of the type polygon, which will carry the points of the curve
 def create_traj_msg(traj):
 
     # Create 'Polygon' message (array of messages of type 'Point')
-    traj_msg = Polygon()
+    traj_msg = Path()
     p = Point()
     for k in range(len(traj[0])):
         # Create point
@@ -242,10 +262,19 @@ def create_traj_msg(traj):
         p.y = traj[1][k]
         p.z = 0.0
         # Append point to polygon
-        traj_msg.points.append(p)
+        traj_msg.path.points.append(p)
+
+    traj_msg.header.stamp = rospy.Time.now()
+
+    traj_msg.closed_path_flag = closed_path_flag
+    traj_msg.insert_n_points = insert_n_points
+    traj_msg.filter_path_n_average = filter_path_n_average
+
 
     return traj_msg
 # ----------  ----------  ----------  ----------  ----------
+
+
 
 
 
@@ -296,17 +325,18 @@ def trajectory():
     global pub_rviz_ref, pub_rviz_pose
 
 
-    pub_traj = rospy.Publisher("/espeleo/traj_points", Polygon, queue_size=10)
+    # pub_traj = rospy.Publisher("/espeleo/traj_points", Polygon, queue_size=10)
+    pub_traj = rospy.Publisher("/espeleo/traj_points", Path, queue_size=10)
     pub_rviz_curve = rospy.Publisher("/visualization_trajectory", MarkerArray, queue_size=1)
     rospy.init_node("trajectory_planner")
 
     # Wait a bit
     rate = rospy.Rate(freq)
 
-
     # Generate one of the curve types
     if curve_number == 1:
         traj = refference_trajectory_1(number_of_samples)
+
     elif curve_number == 2:
         traj = refference_trajectory_2(number_of_samples)
     elif curve_number == 3:
@@ -362,7 +392,8 @@ if __name__ == '__main__':
 
     # Input parameters
     global pkg_path, curve_number, number_of_samples, a, b, phi, cx, cy
-    
+    global closed_path_flag, insert_n_points, filter_path_n_average
+
     # Obtain the parameters
     try:
         pkg_path = rospy.get_param("/trajectory_planner/pkg_path");
@@ -373,6 +404,20 @@ if __name__ == '__main__':
         phi = float(rospy.get_param("/trajectory_planner/phi"))*(3.1415926535/180.0);
         cx = float(rospy.get_param("/trajectory_planner/cx"));
         cy = float(rospy.get_param("/trajectory_planner/cy"));
+        closed_path_flag = bool(rospy.get_param("/trajectory_planner/closed_path_flag"))
+        insert_n_points = int(rospy.get_param("/trajectory_planner/insert_n_points"))
+        filter_path_n_average = int(rospy.get_param("/trajectory_planner/filter_path_n_average"))
+
+        print("\n\33[92mParameters loaded:\33[0m")
+        print("\33[94mnumber_of_samples: " +  str(number_of_samples) +"\33[0m")
+        print("\33[94ma: " +  str(a) +"\33[0m")
+        print("\33[94mb: " + str(b) +"\33[0m")
+        print("\33[94mphi: " + str(phi) +"\33[0m")
+        print("\33[94mcx: " + str(cx) +"\33[0m")
+        print("\33[94mcy: " + str(cy) +"\33[0m")
+        print("\33[94mclosed_path_flag: " + str(closed_path_flag) +"\33[0m")
+        print("\33[94minsert_n_points: " + str(insert_n_points) +"\33[0m")
+        print("\33[94mfilter_path_n_average: " +  str(filter_path_n_average) +"\33[0m")
     except:
         print "\33[41mProblem occurred when trying to read the parameters!: example_trajectories.py\33[0m"
 
