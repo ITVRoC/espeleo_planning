@@ -282,11 +282,11 @@ def trajectory():
     # Publish the message
     pub_traj.publish(traj_msg)
 
-    print "----------------------------"
-    print "Curve created and publhished"
+    print "\33[92m----------------------------\33[0m"
+    print "\33[92mCurve created and publhished\33[0m"
     print "Curve type: ", curve_number
     print "Sampled samples: ", number_of_samples
-    print "----------------------------"
+    print "\33[92m----------------------------\33[0m"
 
     # Send curve to rviz
     sleep(1.0)
