@@ -11,7 +11,7 @@ from tf2_msgs.msg import TFMessage
 # from scipy.spatial.transform import Rotation
 import numpy as np
 import sys
-
+from espeleo_control.msg import Path
 
 """
 Universidade Federal de Minas Gerais (UFMG) - 2019
@@ -62,7 +62,7 @@ def read_txt_trajectory(id):
 def create_traj_msg(traj):
 
     # Create 'Polygon' message (array of messages of type 'Point')
-    traj_msg = Polygon()
+    traj_msg = Path()
     p = Point()
     for k in range(len(traj[0])):
         # Create point
@@ -72,7 +72,7 @@ def create_traj_msg(traj):
         p.y = traj[1][k]
         p.z = traj[2][k]
         # Append point to polygon
-        traj_msg.points.append(p)
+        traj_msg.path.points.append(p)
 
     return traj_msg
 # ----------  ----------  ----------  ----------  ----------
@@ -126,7 +126,7 @@ def trajectory():
     global pub_rviz_ref, pub_rviz_pose
 
 
-    pub_traj = rospy.Publisher("/espeleo/traj_points", Polygon, queue_size=1)
+    pub_traj = rospy.Publisher("/espeleo/traj_points", Path, queue_size=1)
     pub_rviz_curve = rospy.Publisher("/visualization_marker_array", MarkerArray, queue_size=1)
     rospy.init_node("trajectory_planner")
 
@@ -192,7 +192,7 @@ if __name__ == '__main__':
         pkg_path = rospy.get_param("/trajectory_planner/pkg_path");
         curve_number = int(rospy.get_param("/trajectory_planner/dijkstra_traj_number"));
     except:
-        print "\33[41m problem occurred when trying to read the parameters!\33[0m"
+        print "\33[41mProblem occurred when trying to read the parameters!: dijkstra_trajectories.py\33[0m"
 
 
     try:
