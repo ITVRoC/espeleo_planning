@@ -324,11 +324,11 @@ def trajectory():
     global freq
     global pub_rviz_ref, pub_rviz_pose
 
+    rospy.init_node("trajectory_planner_example_traj")
 
     # pub_traj = rospy.Publisher("/espeleo/traj_points", Polygon, queue_size=10)
     pub_traj = rospy.Publisher("/espeleo/traj_points", Path, queue_size=10)
     pub_rviz_curve = rospy.Publisher("/visualization_trajectory", MarkerArray, queue_size=1)
-    rospy.init_node("trajectory_planner")
 
     # Wait a bit
     rate = rospy.Rate(freq)
@@ -353,7 +353,7 @@ def trajectory():
     traj_msg = create_traj_msg(traj)
 
     # Wait a bit
-    rate = rospy.Rate(freq)
+    rate.sleep()
 
     # Publish the message
     pub_traj.publish(traj_msg)
@@ -365,16 +365,8 @@ def trajectory():
     print "\33[92m----------------------------\33[0m"
 
     # Send curve to rviz
-    sleep(1.0)
     send_curve_to_rviz(traj, pub_rviz_curve)
-
-
-
-    while not rospy.is_shutdown():
-
-        rate.sleep()
-
-        break
+    rate.sleep()
 
 # ---------- !! ---------- !! ---------- !! ---------- !! ----------
 
@@ -427,3 +419,5 @@ if __name__ == '__main__':
         trajectory()
     except rospy.ROSInterruptException:
         pass
+
+    rospy.sleep(.5)
