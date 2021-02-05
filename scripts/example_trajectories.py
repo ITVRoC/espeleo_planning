@@ -190,6 +190,48 @@ def refference_trajectory_4(N):
 
 
 
+
+
+# Function to generate a lemniscate path
+def refference_trajectory_5(N):
+
+    global a, b, phi, cx, cy
+
+    # Geometric parameters
+    # a = extension on x
+    # b = extension on y
+    # cx = 0 # center x
+    # cy = 0 # cewnter y
+    # phi = 0 # rotation angle of the curve
+
+    # Parameter
+    dp = 2*pi/N
+    p = -dp
+
+    traj = [[],[]]
+    for k in range(N):
+
+        # Increment parameter
+        p = p + dp
+
+        # Compute a point of the "rectangular" in a local frame
+        x_ref0 = a*1.0*cos(p)/(1+sin(p)**2);
+        y_ref0 = b*2.0*sqrt(2.0)*cos(p)*sin(p)/(1+sin(p)**2);
+
+        # Rotate and displace the point
+        x_ref = cos(phi) * x_ref0 - sin(phi) * y_ref0 + cx * 1
+        y_ref = sin(phi) * x_ref0 + cos(phi) * y_ref0 + cy * 1
+
+        # Save the computed point
+        traj[0].append(x_ref)
+        traj[1].append(y_ref)
+
+    return (traj)
+# ----------  ----------  ----------  ----------  ----------
+
+
+
+
 """ # CREATE HERE A NEW CURVE
 # Function to generate a "??" path
 def refference_trajectory_5(N):
@@ -343,6 +385,8 @@ def trajectory():
         traj = refference_trajectory_3(number_of_samples)
     elif curve_number == 4:
         traj = refference_trajectory_4(number_of_samples)
+    elif curve_number == 5:
+        traj = refference_trajectory_5(number_of_samples)
     # PLACE HERE A NEW FUNCTION
     # elif curve_number == 5:
     #     traj = refference_trajectory_5(number_of_samples)
