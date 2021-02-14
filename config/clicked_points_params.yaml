@@ -1,0 +1,23 @@
+
+#Parameters for the script clicked_poly_planner.py
+
+
+# Number of points to be sampled in between ech pair of points
+N_points: 8
+
+
+#Name of the topic in which the path will be passed to the controller (type: Polygon)
+path_topic_name: /ref_path
+#Name of the topic in which the path will be passed to Rviz (type: MarkerArray)
+visualization_topic_name: /vizual_path
+
+#Name of the topic in which the pose will be obtained (type: PointStamped)
+clicked_point_topic_name: /clicked_point
+#Name of the topic in which the pose will be obtained (type: Odometry)
+pose_topic_name: /ekf_odom
+#Name of the topic in which the pose will be obtained (type: Bool)
+start_topic_name: /start_planner
+#Name of the topic in which the pose will be obtained (type: Bool)
+clear_topic_name: /clear_planner
+
+
