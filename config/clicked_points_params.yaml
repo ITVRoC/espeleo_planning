@@ -15,9 +15,9 @@ visualization_topic_name: /vizual_path
 clicked_point_topic_name: /clicked_point
 #Name of the topic in which the pose will be obtained (type: Odometry)
 pose_topic_name: /ekf_odom
-#Name of the topic in which the pose will be obtained (type: Bool)
+#Name of the topic that receives a command to start the planner (type: Bool)
 start_topic_name: /start_planner
-#Name of the topic in which the pose will be obtained (type: Bool)
+#Name of the topic that receives a command to clear the points already listened (type: Bool)
 clear_topic_name: /clear_planner
 
 
