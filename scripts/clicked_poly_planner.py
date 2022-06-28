@@ -28,6 +28,8 @@ from visualization_msgs.msg import Marker, MarkerArray
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Bool
 
+from espeleo_control.msg import Path
+
 
 
 #Function to obtain a polynomial interpolation
@@ -106,7 +108,7 @@ def send_marker_array_to_rviz(traj, pub_marker_array):
     points_marker = MarkerArray()
     for i in range(len(traj[0])):
         marker = Marker()
-        marker.header.frame_id = "/os1_init"
+        marker.header.frame_id = "os1_init"
         marker.header.stamp = rospy.Time.now()
         marker.id = i
         marker.type = marker.SPHERE
@@ -152,16 +154,20 @@ def callback_start(msg):
         path = planner(N, points, robot_position,pub_marker)
 
         #publish a polygon message with the path
-        poly_msg = Polygon()
+        poly_msg = Path()
         for i in range(len(path[0])):
             point_msg = Point32()
             point_msg.x = path[0][i]
             point_msg.y = path[1][i]
             point_msg.z = path[2][i]
 
-            poly_msg.points.append(point_msg)
+            poly_msg.path.points.append(point_msg)
 
-
+        poly_msg.header.stamp = rospy.Time.now()
+        poly_msg.closed_path_flag = False
+        poly_msg.insert_n_points = 8
+        poly_msg.filter_path_n_average = 4
+        
         pub_traj.publish(poly_msg)
 
         print("Path published")
@@ -209,7 +215,7 @@ def run():
 
     # pub_traj = rospy.Publisher("/ref_path", Polygon, queue_size=10)
     # pub_marker = rospy.Publisher("/vizual_path", MarkerArray, queue_size=10)
-    pub_traj = rospy.Publisher(path_topic_name, Polygon, queue_size=10)
+    pub_traj = rospy.Publisher(path_topic_name, Path, queue_size=10)
     pub_marker = rospy.Publisher(visualization_topic_name, MarkerArray, queue_size=10)
 
 
@@ -258,6 +264,7 @@ if __name__ == '__main__':
     #Default name of the topic in which the pose will be obtained (type: PointStamped)
     clicked_point_topic_name = "clicked_point"
     #Default name of the topic in which the pose will be obtained (type: Odometry)
+    # pose_topic_name = "ekf_odom_2"
     pose_topic_name = "ekf_odom_2"
     #Default name of the topic in which the pose will be obtained (type: Bool)
     start_topic_name = "start_planner"
