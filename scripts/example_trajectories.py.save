@@ -320,8 +320,7 @@ def create_traj_msg(traj):
 
 
 
-# Function to send a array of markers, representing the curve, to rviz
-def send_curve_to_rviz(traj,pub_rviz):
+# Function to send a array of markers, representing the curve, to rvdef send_curve_to_rviz(traj,pub_rviz):
 
     # Create messsage
     points_marker = MarkerArray()
@@ -329,7 +328,7 @@ def send_curve_to_rviz(traj,pub_rviz):
     # Iterate over the points
     for k in range(len(traj[0])):
         marker = Marker()
-        marker.header.frame_id = "/base_init" # /world
+        marker.header.frame_id = "/world"
         marker.header.stamp = rospy.Time.now()
         marker.id = k
         marker.type = marker.SPHERE
@@ -411,7 +410,6 @@ def trajectory():
     # Send curve to rviz
     send_curve_to_rviz(traj, pub_rviz_curve)
     rate.sleep()
-    print "\33[92mEnd33[0m"
 
 # ---------- !! ---------- !! ---------- !! ---------- !! ----------
 

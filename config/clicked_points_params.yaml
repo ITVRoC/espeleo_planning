@@ -10,11 +10,12 @@ N_points: 8
 path_topic_name: /espeleo/traj_points #/ref_path
 #Name of the topic in which the path will be passed to Rviz (type: MarkerArray)
 visualization_topic_name: /vizual_path
+visualization_points_topic_name: /points_path
 
 #Name of the topic in which the pose will be obtained (type: PointStamped)
 clicked_point_topic_name: /clicked_point
 #Name of the topic in which the pose will be obtained (type: Odometry)
-pose_topic_name: /ekf_loam/integrated_to_init
+pose_topic_name:  /ekf_loam/integrated_to_init # /ekf_odom
 #Name of the topic that receives a command to start the planner (type: Bool)
 start_topic_name: /start_planner
 #Name of the topic that receives a command to clear the points already listened (type: Bool)

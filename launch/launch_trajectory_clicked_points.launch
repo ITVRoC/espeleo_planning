@@ -6,10 +6,10 @@
 
 	<!--Run the node that will generate an example trajectory-->
 	<!--Example curves-->
-	<node pkg = "espeleo_planning" name = "trajectory_planner" type = "example_trajectories.py" args="" output="screen">
+	<!-- <node pkg = "espeleo_planning" name = "trajectory_planner" type = "example_trajectories.py" args="" output="screen">
 		<param name="pkg_path" type="string" value="$(find espeleo_planning)/" />
 		<rosparam command="load" file="$(find espeleo_planning)/config/planning_params.yaml" />
-	</node> 
+	</node> -->
 
 
 	<!--Run the node that will read a trajectory from the file and publish to the controller-->
@@ -21,10 +21,10 @@
 
 
 		<!--Run the node that will generate a trajectory from clicked waypoints on cloud map-->
-	<!-- Waypoint Curves 
+	<!-- Waypoint Curves -->
 	<node pkg = "espeleo_planning" name = "trajectory_planner" type = "clicked_poly_planner.py" args="" output="screen">
-		<rosparam command="load" file="$(find espeleo_planning)/config/clicked_points_params.yaml" /> 
-	</node> -->
+		<rosparam command="load" file="$(find espeleo_planning)/config/clicked_points_params.yaml" />
+	</node> 
 
 
 </launch>

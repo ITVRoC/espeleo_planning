@@ -67,10 +67,10 @@ def planner(N_interpolation,points0,r_pos,pub_marker_array):
         #A = [[points[k][0],points[k][1],points[k][2]], [points[k+1][0],points[k+1][1],points[k+1][2]], [T[k][0],T[k][1],T[k][2]], [T[k+1][0],T[k+1][1],T[k+1][2]]]
 
         #Compute the coefficients
-        ck = np.matrix(Minv)*np.matrix(A)
+    	ck = np.matrix(Minv)*np.matrix(A)
     	
         #Sample the computed polynomials
-        for s in s_vec:
+    	for s in s_vec:
             path[0].append(ck[0,0]*s**3+ck[1,0]*s**2+ck[2,0]*s**1+ck[3,0]*s**0)
             path[1].append(ck[0,1]*s**3+ck[1,1]*s**2+ck[2,1]*s**1+ck[3,1]*s**0)
             path[2].append(points[k][2]*(1.0-s)+points[k+1][2]*(s))
@@ -140,50 +140,6 @@ def send_marker_array_to_rviz(traj, pub_marker_array):
     pub_marker_array.publish(points_marker)#
 
 
-def send_clicked_points_array_to_rviz(points_to_pub, pub_points):
-    """Function to send a array of markers, representing the clicked points, to rviz
-    :param traj: trajectory list of points
-    :param pub_rviz: ROS publisher object
-    :return:
-    """
-    if not pub_points:
-        raise AssertionError("pub_marker_array is not valid:%s".format(pub_points))
-
-    #Create a MarkerArray message
-    points_marker = MarkerArray()
-    for i in range(len(points_to_pub)):
-        marker = Marker()
-        marker.header.frame_id = "base_init"
-        marker.header.stamp = rospy.Time.now()
-        marker.id = i
-        marker.type = marker.SPHERE
-        marker.action = marker.ADD
-        # Duration
-        # marker.lifetime = rospy.Duration.from_sec(1.0)
-        # Size of sphere
-        marker.scale.x = 0.30 #0.15
-        marker.scale.y = 0.30 #0.15
-        marker.scale.z = 0.30 #0.15
-        # Color and transparency
-        marker.color.a = 0.7
-        marker.color.r = 1.0
-        marker.color.g = 0.0
-        marker.color.b = 0.0
-        # Pose
-        marker.pose.orientation.w = 1.0
-        px = points_to_pub[i][0]
-        py = points_to_pub[i][1]
-        pz = points_to_pub[i][2]
-        marker.pose.position.x = px
-        marker.pose.position.y = py
-        marker.pose.position.z = pz
-
-        # Append marker to array
-        points_marker.markers.append(marker)
-
-    # Publish marker array
-    pub_points.publish(points_marker)#
-
 
 #Callback to command the computation of a path
 def callback_start(msg):
@@ -228,11 +184,9 @@ def callback_odom(msg):
 
 #Callback to listen clicked points
 def callback_new_point(msg):
-    global points, pub_points
+    global points
     points.append([msg.point.x, msg.point.y, msg.point.z])
     print("%d points" % len(points))
-
-    send_clicked_points_array_to_rviz(points, pub_points)
 
 
 
@@ -250,7 +204,7 @@ def run():
     global freq
     global pub_rviz_ref, pub_rviz_pose
     global points, robot_position
-    global pub_traj, pub_marker, pub_points
+    global pub_traj, pub_marker
 
     global clicked_point_topic_name, pose_topic_name, start_topic_name, clear_topic_name
 
@@ -263,7 +217,6 @@ def run():
     # pub_marker = rospy.Publisher("/vizual_path", MarkerArray, queue_size=10)
     pub_traj = rospy.Publisher(path_topic_name, Path, queue_size=10)
     pub_marker = rospy.Publisher(visualization_topic_name, MarkerArray, queue_size=10)
-    pub_points = rospy.Publisher(visualization_points_topic_name, MarkerArray, queue_size=10)
 
 
     # rospy.Subscriber("clicked_point", PointStamped, callback_new_point)
@@ -308,8 +261,6 @@ if __name__ == '__main__':
     path_topic_name = "ref_path"
     #Name of the topic in which the path will be passed to Rviz (type: MarkerArray)
     visualization_topic_name = "vizual_path"
-    #Name of the topic in which the clicked points path will be passed to Rviz (type: MarkerArray)
-    visualization_points_topic_name = "points_path"
     #Default name of the topic in which the pose will be obtained (type: PointStamped)
     clicked_point_topic_name = "clicked_point"
     #Default name of the topic in which the pose will be obtained (type: Odometry)
@@ -328,7 +279,6 @@ if __name__ == '__main__':
         N_points = int(rospy.get_param("/trajectory_planner/N_points"));
         path_topic_name = rospy.get_param("/trajectory_planner/path_topic_name");
         visualization_topic_name = rospy.get_param("/trajectory_planner/visualization_topic_name");
-        visualization_points_topic_name = rospy.get_param("/trajectory_planner/visualization_points_topic_name");
         clicked_point_topic_name = rospy.get_param("/trajectory_planner/clicked_point_topic_name");
         pose_topic_name = rospy.get_param("/trajectory_planner/pose_topic_name");
         start_topic_name = rospy.get_param("/trajectory_planner/start_topic_name");
@@ -338,14 +288,13 @@ if __name__ == '__main__':
         print("\33[94mN_points: " +  str(N_points) +"\33[0m")
         print("\33[94mpath_topic_name: " +  str(path_topic_name) +"\33[0m")
         print("\33[94mvisualization_topic_name: " + str(visualization_topic_name) +"\33[0m")
-        print("\33[94mvisualization_points_topic_name: " + str(visualization_points_topic_name) +"\33[0m")
         print("\33[94mclicked_point_topic_name: " +  str(clicked_point_topic_name) +"\33[0m")
         print("\33[94mpose_topic_name: " + str(pose_topic_name) +"\33[0m")
         print("\33[94mstart_topic_name: " + str(start_topic_name) +"\33[0m")
         print("\33[94mclear_topic_name: " + str(clear_topic_name) +"\33[0m")
 
     except:
-        print("\33[41mProblem occurred when trying to read the parameters!: clicked_poly_planner.py\33[0m")
+        print "\33[41mProblem occurred when trying to read the parameters!: clicked_poly_planner.py\33[0m"
 
 
     try:
