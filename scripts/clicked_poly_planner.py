@@ -25,8 +25,7 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Bool
 from std_srvs.srv import SetBool, SetBoolResponse
 
-from distancefield.msg import Path
-# from espeleo_control.msg import Path
+from espeleo_control.msg import Path
 
 
 class Planner:
